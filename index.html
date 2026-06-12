@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monthly Money Plan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1 id="page-title">Monthly Money Plan</h1>
+      <p id="page-subtitle" class="subtitle"></p>
+      <p id="target-guide" class="target-guide"></p>
+      <div class="toolbar">
+        <label class="month">Budget Month:
+          <input type="text" id="budget-month" placeholder="e.g. June 2026" />
+        </label>
+        <span class="toolbar-spacer"></span>
+        <button id="reset-btn" class="btn btn-ghost" type="button">Reset to defaults</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="snapshot" aria-label="Budget Snapshot">
+      <h2>Budget Snapshot</h2>
+      <div id="snapshot-cards" class="cards"></div>
+    </section>
+
+    <section id="budget-sections" class="budget"></section>
+
+    <section class="instructions">
+      <details>
+        <summary>How to use this plan</summary>
+        <div id="instructions-body" class="instructions-body"></div>
+      </details>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Built from the Reimagine Finances workbook. Edits are saved in your
+        browser only.</p>
+    </div>
+  </footer>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>
