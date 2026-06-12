@@ -1,15 +1,24 @@
 :root {
-  --bg: #0f172a;
+  /* Palette sampled from the Reimagine Finances logo */
+  --navy-900: #1c2138;
+  --navy-800: #262c47;
+  --navy-700: #323957;
+  --steel: #52618c;       /* chart bars / primary accent */
+  --steel-light: #7d8cb5;
+  --brick: #9d3834;       /* red bars / over-budget */
+  --gold: #c79a4a;        /* tagline / highlights */
+  --silver: #e8ecf4;
+
   --panel: #ffffff;
-  --ink: #0f172a;
-  --muted: #64748b;
-  --line: #e2e8f0;
-  --brand: #0d9488;
-  --brand-dark: #0f766e;
-  --good: #16a34a;
-  --warn: #d97706;
-  --bad: #dc2626;
-  --shadow: 0 1px 3px rgba(15, 23, 42, .08), 0 1px 2px rgba(15, 23, 42, .04);
+  --ink: #1c2138;
+  --muted: #6b7390;
+  --line: #e3e6ef;
+  --brand: var(--steel);
+  --brand-dark: var(--navy-700);
+  --good: #2f8f57;
+  --warn: var(--gold);
+  --bad: var(--brick);
+  --shadow: 0 1px 3px rgba(28, 33, 56, .10), 0 1px 2px rgba(28, 33, 56, .05);
 }
 
 * { box-sizing: border-box; }
@@ -26,19 +35,43 @@ body {
 
 /* Header */
 .site-header {
-  background: linear-gradient(135deg, var(--brand-dark), var(--brand));
-  color: #fff;
-  padding: 2rem 0 1.5rem;
+  background:
+    radial-gradient(1200px 300px at 15% -40%, rgba(82, 97, 140, .55), transparent),
+    linear-gradient(135deg, var(--navy-900), var(--navy-700));
+  color: var(--silver);
+  padding: 1.75rem 0 1.5rem;
+  border-bottom: 3px solid var(--gold);
 }
-.site-header h1 { margin: 0; font-size: 1.9rem; font-weight: 700; }
-.subtitle { margin: .35rem 0 0; opacity: .92; }
+.brand { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.brand-logo {
+  height: 88px;
+  width: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .35);
+}
+.brand-tagline {
+  margin: 0;
+  color: var(--gold);
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-size: .8rem;
+}
+.site-header h1 {
+  margin: 1.1rem 0 0;
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: #fff;
+}
+.subtitle { margin: .35rem 0 0; color: var(--steel-light); }
 .target-guide {
   margin: .75rem 0 0;
   font-size: .85rem;
-  font-weight: 500;
-  background: rgba(255, 255, 255, .15);
+  font-weight: 600;
+  color: var(--navy-900);
+  background: var(--gold);
   display: inline-block;
-  padding: .35rem .7rem;
+  padding: .35rem .8rem;
   border-radius: 999px;
 }
 .toolbar {
@@ -98,8 +131,8 @@ body {
 
 .status { font-size: .75rem; font-weight: 600; padding: .1rem .5rem; border-radius: 999px; }
 .status.ontrack, .status.balanced { background: #dcfce7; color: var(--good); }
-.status.review { background: #fef3c7; color: var(--warn); }
-.status.over { background: #fee2e2; color: var(--bad); }
+.status.review { background: #faf0d4; color: #8a6516; }
+.status.over { background: #f6e0df; color: var(--bad); }
 
 /* Budget tables */
 .section-block {
@@ -173,7 +206,7 @@ tr.section-total td { font-weight: 700; border-top: 2px solid var(--ink); backgr
 .instructions-body p { margin: .2rem 0; }
 .instructions-body p.head { font-weight: 700; margin-top: .9rem; }
 
-.site-footer { background: #0f172a; color: #cbd5e1; font-size: .82rem; padding: 1.25rem 0; }
+.site-footer { background: var(--navy-900); color: var(--steel-light); font-size: .82rem; padding: 1.25rem 0; border-top: 3px solid var(--gold); }
 .site-footer p { margin: 0; }
 
 @media (max-width: 560px) {
