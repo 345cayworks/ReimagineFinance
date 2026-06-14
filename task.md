@@ -17,4 +17,4 @@
 - [x] `assets/app.js` — renderCharts() (donut + bars), exportCSV(), Overview banner, wire into live recompute
 - [x] `.github/workflows/deploy-pages.yml` — Actions deploy-pages
 - [x] Verify: node --check, live edit updates charts/snapshot, CSV correct, desktop + mobile screenshots
-- [ ] Commit + push to main
+- [x] Commit + push to main
