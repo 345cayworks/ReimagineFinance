@@ -6,6 +6,15 @@ const fmt = (n) =>
   n.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 const pct = (n) => (n * 100).toFixed(0) + "%";
 
+// On-brand, distinguishable color per spending category (donut + bars).
+const SECTION_COLOR = {
+  NEEDS: "#52618c",
+  WANTS: "#7d8cb5",
+  SAVINGS: "#2f8f57",
+  INVESTMENTS: "#c79a4a",
+  CHARITY: "#9d3834",
+};
+
 let DATA = null; // working copy (may carry user edits)
 let DEFAULTS = null; // pristine copy from budget.json
 
@@ -31,12 +40,26 @@ async function init() {
     DATA = structuredClone(DEFAULTS);
     month.value = "";
     renderSections();
-    renderSnapshot();
+    refreshDashboard();
   });
 
+  document.getElementById("export-btn").addEventListener("click", exportCSV);
+
   renderSections();
-  renderSnapshot();
+  refreshDashboard();
   renderInstructions();
+}
+
+/* Re-render every live, computed view (snapshot, overview banner, charts). */
+function refreshDashboard() {
+  renderOverview();
+  renderSnapshot();
+  renderCharts();
+}
+
+/* Spending sections only (everything except INCOME), in workbook order. */
+function spendingSections() {
+  return DATA.sections.filter((s) => s.key !== "INCOME");
 }
 
 /* ---- totals ---- */
@@ -130,7 +153,7 @@ function card(o) {
 /* ---- budget tables ---- */
 function renderSections() {
   const host = document.getElementById("budget-sections");
-  host.innerHTML = "<h2>Budget Detail</h2>";
+  host.innerHTML = '<h2 class="section-title">Budget Detail</h2>';
 
   DATA.sections.forEach((sec) => {
     const block = document.createElement("details");
@@ -203,7 +226,7 @@ function itemRow(sec, it) {
       it[inp.dataset.f] = parseFloat(inp.value) || 0;
       refreshRow();
       refreshSectionTotal(sec);
-      renderSnapshot();
+      refreshDashboard();
       save();
     });
   });
@@ -241,6 +264,193 @@ function refreshAllShares() {
       })
     );
   });
+}
+
+/* ---- overview banner ---- */
+function renderOverview() {
+  const host = document.getElementById("overview");
+  if (!host) return;
+  const income = incomeTotal().planned;
+  let allocated = 0;
+  for (const sec of spendingSections()) allocated += sectionTotals(sec).planned;
+  const left = income - allocated;
+  let state = "balanced",
+    label = "Balanced",
+    leftLabel = "Unallocated";
+  if (left > 0) {
+    state = "review";
+    label = "Money left to allocate";
+  } else if (left < 0) {
+    state = "over";
+    label = "Over income";
+    leftLabel = "Over by";
+  }
+  host.innerHTML = `
+    <div class="ov-main">
+      <span class="ov-label">Monthly income</span>
+      <span class="ov-income">${fmt(income)}</span>
+    </div>
+    <div class="ov-stat"><span class="ov-label">Allocated</span>
+      <span class="ov-val">${fmt(allocated)}</span>
+      <span class="ov-sub">${income ? pct(allocated / income) : "—"} of income</span></div>
+    <div class="ov-stat"><span class="ov-label">${leftLabel}</span>
+      <span class="ov-val">${fmt(Math.abs(left))}</span>
+      <span class="ov-sub">${income ? pct(Math.abs(left) / income) : "—"} of income</span></div>
+    <div class="ov-status status ${state}">${label}</div>`;
+}
+
+/* ---- charts (vanilla SVG / CSS, no dependencies) ---- */
+function renderCharts() {
+  const income = incomeTotal().planned;
+  const rows = spendingSections().map((sec) => {
+    const t = sectionTotals(sec);
+    return {
+      key: sec.key,
+      color: SECTION_COLOR[sec.key] || "#52618c",
+      planned: t.planned,
+      actual: t.actual,
+      target$: (sec.target || 0) * income,
+    };
+  });
+  renderDonut(rows, income);
+  renderBars(rows);
+}
+
+function renderDonut(rows, income) {
+  const host = document.getElementById("chart-donut");
+  const legend = document.getElementById("donut-legend");
+  if (!host) return;
+  const total = rows.reduce((s, r) => s + r.planned, 0);
+  const R = 70,
+    W = 26,
+    C = 2 * Math.PI * R;
+
+  let arcs = "",
+    acc = 0;
+  if (total > 0) {
+    rows
+      .filter((r) => r.planned > 0)
+      .forEach((r) => {
+        const share = r.planned / total;
+        const len = share * C;
+        const angle = acc * 360;
+        arcs += `<circle cx="100" cy="100" r="${R}" fill="none" stroke="${r.color}"
+          stroke-width="${W}" stroke-dasharray="${len.toFixed(2)} ${C.toFixed(2)}"
+          transform="rotate(${(angle - 90).toFixed(2)} 100 100)"><title>${r.key}: ${fmt(
+          r.planned
+        )} (${pct(share)})</title></circle>`;
+        acc += share;
+      });
+  } else {
+    arcs = `<circle cx="100" cy="100" r="${R}" fill="none" stroke="#e3e6ef" stroke-width="${W}" />`;
+  }
+
+  const center =
+    total > 0
+      ? `<text x="100" y="94" class="donut-amt">${fmt(total)}</text>
+         <text x="100" y="116" class="donut-cap">allocated</text>`
+      : `<text x="100" y="105" class="donut-cap">No amounts yet</text>`;
+
+  const top = [...rows].sort((a, b) => b.planned - a.planned)[0];
+  const aria =
+    total > 0
+      ? `Allocation donut. ${fmt(total)} allocated. Largest: ${top.key} ${pct(
+          top.planned / total
+        )}.`
+      : "Allocation donut, no amounts entered yet.";
+
+  host.innerHTML = `<svg viewBox="0 0 200 200" role="img" aria-label="${aria}">
+    <g>${arcs}</g>${center}</svg>`;
+
+  legend.innerHTML = rows
+    .map(
+      (r) => `<li><span class="sw" style="background:${r.color}"></span>
+        <span class="lg-name">${r.key}</span>
+        <span class="lg-val">${fmt(r.planned)}</span>
+        <span class="lg-pct">${income ? pct(r.planned / income) : "—"}</span></li>`
+    )
+    .join("");
+}
+
+function renderBars(rows) {
+  const host = document.getElementById("chart-bars");
+  if (!host) return;
+  const max = Math.max(
+    1,
+    ...rows.map((r) => Math.max(r.planned, r.actual, r.target$))
+  );
+  const w = (v) => ((v / max) * 100).toFixed(1) + "%";
+  host.innerHTML = rows
+    .map((r) => {
+      // Only flag the spending caps (Needs/Wants) when over target — exceeding
+      // the Savings/Investments/Charity target is intentional, not a problem.
+      const capped = r.key === "NEEDS" || r.key === "WANTS";
+      const over = capped && r.target$ > 0 && r.planned > r.target$ * 1.02;
+      const tick =
+        r.target$ > 0
+          ? `<span class="bar-target" style="left:${w(
+              r.target$
+            )}" title="Target ${fmt(r.target$)}"></span>`
+          : "";
+      return `<div class="bar-row${over ? " over" : ""}">
+        <div class="bar-head"><span class="bar-name">${r.key}</span>
+          <span class="bar-vals">P ${fmt(r.planned)} · A ${fmt(r.actual)}</span></div>
+        <div class="bar-track">
+          <div class="bar bar-planned" style="width:${w(r.planned)}"></div>
+          <div class="bar bar-actual" style="width:${w(r.actual)}"></div>
+          ${tick}
+        </div></div>`;
+    })
+    .join("");
+}
+
+/* ---- CSV export ---- */
+function csvCell(v) {
+  const s = String(v);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function exportCSV() {
+  const income = incomeTotal().planned;
+  const sharePct = (n) => (income ? Math.round((n / income) * 100) + "%" : "");
+  const lines = [["Section", "Subheading", "Item", "Planned", "Actual", "Difference", "% Income"]];
+
+  DATA.sections.forEach((sec) => {
+    sec.subheadings.forEach((sub) => {
+      sub.items.forEach((it) => {
+        lines.push([
+          sec.key,
+          sub.name || "",
+          it.name,
+          it.planned,
+          it.actual,
+          it.actual - it.planned,
+          sharePct(it.planned),
+        ]);
+      });
+    });
+    const t = sectionTotals(sec);
+    lines.push([sec.key, "", "Total " + sec.key, t.planned, t.actual, t.actual - t.planned, sharePct(t.planned)]);
+  });
+
+  let allocated = 0;
+  for (const sec of spendingSections()) allocated += sectionTotals(sec).planned;
+  lines.push([]);
+  lines.push(["SUMMARY", "", "Total Income", income, "", "", ""]);
+  lines.push(["SUMMARY", "", "Total Allocated", allocated, "", "", sharePct(allocated)]);
+  lines.push(["SUMMARY", "", "Unallocated", income - allocated, "", "", sharePct(income - allocated)]);
+
+  const csv = lines.map((row) => row.map(csvCell).join(",")).join("\r\n");
+  const slug = (DATA.month || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const name = "reimagine-budget" + (slug ? "-" + slug : "") + ".csv";
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 /* ---- instructions ---- */

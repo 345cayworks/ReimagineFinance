@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Monthly Money Plan</title>
+  <title>Monthly Money Plan — Reimagine Finances</title>
+  <meta name="description" content="An interactive monthly budget built from the Reimagine Finances Monthly Money Plan: live snapshot, charts, editable planned vs. actual, and the 50/20/10/10/10 targets." />
+  <meta name="theme-color" content="#1c2138" />
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
@@ -24,15 +27,39 @@
           <input type="text" id="budget-month" placeholder="e.g. June 2026" />
         </label>
         <span class="toolbar-spacer"></span>
+        <button id="export-btn" class="btn btn-gold" type="button">
+          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v10m0 0 4-4m-4 4-4-4M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2"/></svg>
+          Export CSV
+        </button>
         <button id="reset-btn" class="btn btn-ghost" type="button">Reset to defaults</button>
       </div>
     </div>
   </header>
 
   <main class="wrap">
+    <section id="overview" class="overview" aria-label="Budget overview"></section>
+
     <section class="snapshot" aria-label="Budget Snapshot">
-      <h2>Budget Snapshot</h2>
+      <h2 class="section-title">Budget Snapshot</h2>
       <div id="snapshot-cards" class="cards"></div>
+    </section>
+
+    <section class="charts" aria-label="Charts">
+      <h2 class="section-title">Where the money goes</h2>
+      <div class="chart-grid">
+        <article class="panel chart-card">
+          <h3 class="chart-title">Allocation by category</h3>
+          <div id="chart-donut" class="chart-donut"></div>
+          <ul id="donut-legend" class="legend"></ul>
+        </article>
+        <article class="panel chart-card">
+          <h3 class="chart-title">Planned vs. Actual</h3>
+          <div id="chart-bars" class="chart-bars"></div>
+          <p class="chart-foot"><span class="key key-planned"></span> Planned
+            <span class="key key-actual"></span> Actual
+            <span class="key key-target"></span> Target</p>
+        </article>
+      </div>
     </section>
 
     <section id="budget-sections" class="budget"></section>

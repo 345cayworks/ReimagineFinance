@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Reimagine Finances">
+  <rect width="64" height="64" rx="14" fill="#1c2138"/>
+  <rect width="64" height="64" rx="14" fill="none" stroke="#c79a4a" stroke-width="2"/>
+  <rect x="14" y="36" width="8" height="14" rx="2" fill="#52618c"/>
+  <rect x="28" y="28" width="8" height="22" rx="2" fill="#7d8cb5"/>
+  <rect x="42" y="18" width="8" height="32" rx="2" fill="#c79a4a"/>
+  <path d="M13 30 L27 22 L37 27 L51 13" fill="none" stroke="#e8ecf4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="51" cy="13" r="3.4" fill="#e8ecf4"/>
+</svg>
