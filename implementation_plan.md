@@ -49,3 +49,43 @@ a framework instead.)
 ## Open question
 Static vanilla page (recommended) vs. a framework? Proceeding with vanilla unless
 you say otherwise.
+
+---
+
+# Phase 2 — Modernization, Charts, Export, Deploy (approved 2026-06-14)
+
+## Goal
+Modernize the interface to a polished "financial dashboard" look, add live
+charts, CSV export, a favicon, and a GitHub Pages deploy workflow. Stay vanilla
+HTML/CSS/JS — **zero dependencies, no build step** (SVG charts, not a chart lib,
+so the page still works fully offline).
+
+## Files to touch
+- `[MODIFY] index.html` — favicon + meta (description, theme-color); restructure
+  into a dashboard layout; add an Overview banner, a Charts section, and an
+  "Export CSV" button in the toolbar.
+- `[MODIFY] assets/styles.css` — modern token system (surfaces, elevation scale,
+  radii), refined cards/tables, status pills, chart styles, hover/focus states,
+  `prefers-reduced-motion`, tighter responsive rules.
+- `[MODIFY] assets/app.js` — `renderCharts()` (SVG donut: allocation by section;
+  SVG planned-vs-actual bars with a target tick), wired into the existing live
+  recompute path; `exportCSV()` (Blob download of all line items + totals);
+  Overview banner recompute.
+- `[NEW] assets/favicon.svg` — on-brand scalable mark (navy/gold) from the logo.
+- `[NEW] .github/workflows/deploy-pages.yml` — Actions deploy-pages (readable
+  build status; owner sets Pages source = "GitHub Actions").
+
+## Logical behavior (additions)
+1. Donut: one arc per spending section sized by planned share; center = total
+   allocated; interactive legend (value + % of income). `role="img"` + aria-label.
+2. Bars: per spending section, Planned vs Actual horizontal bars with a target
+   tick at `target% × income`; over-target bars flagged.
+3. Charts re-render in the same spots `renderSnapshot()` already fires (edit,
+   reset) so they stay live. Respect `prefers-reduced-motion` (no transitions).
+4. Export CSV → `reimagine-budget[-month].csv`: Section, Subheading, Item,
+   Planned, Actual, Difference, % Income, plus section + snapshot totals.
+
+## Verification
+- `node --check assets/app.js`; load via local server; edit a value → snapshot,
+  charts, totals all update; Export CSV downloads correct numbers; favicon shows.
+- Screenshot the running page (Claude Preview) at desktop + mobile widths.
